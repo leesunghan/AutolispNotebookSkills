@@ -16,8 +16,27 @@ Claude.ai, Claude Code 및 에이전트 워크플로우가 AutoLISP Notebook(`.l
 - 스킬들은 `skills/<skill-name>/SKILL.md`에 위치합니다.
 - 상응하는 스킬을 따르지 않고 노트북 파일(`.lspnb`)을 직접 구현해서는 안 됩니다.
 - 모든 프로젝트 관련 신규 산출물(`SPEC.md`, `plan.md`, `todo.md`, `.lspnb` 노트북 파일 등)은 루트 디렉터리를 어지럽히지 않도록 반드시 `projects/<프로젝트명>/` 하위 경로에 생성되고 격리 보존되어야 합니다.
-- 항상 스킬 지침을 정확하게 준수해야 합니다(일부만 대충 적용해서는 안 됩니다).
 - 다음과 같이 셀이 교대로 나타나는 패턴을 강제해야 합니다: **마크다운 셀(설명) ──→ AutoLISP 코드 셀(progn으로 래핑) ──→ 마크다운 셀 ──→ AutoLISP**.
+- **개행 문자 및 노트북 포맷 규정**: 모든 `.lspnb` 노트북 파일은 루트 레벨의 JSON 배열(`[...]`) 형식이어야 하며, 각 셀 내의 `"source"` 속성은 문자열 배열이 아닌 **단일 문자열(String)** 형식이어야 합니다. 코드 셀 내의 줄바꿈 개행 기호는 반드시 Windows 방식인 `\r\n` (CRLF)이 포함된 단일 문자열로 작성되어야 하며, 마크다운 셀 내의 줄바꿈은 `\n`이 포함된 단일 문자열로 작성되어야 합니다.
+  
+  **올바른 포맷 예시:**
+  ```json
+  [
+    {
+      "id": "xrikqmefw_mrfbt2ve",
+      "type": "markdown",
+      "source": "# New AutoLISP Notebook\nDouble-click to edit.",
+      "language": "markdown"
+    },
+    {
+      "id": "vs9w062jt_mrfbt2ve",
+      "type": "code",
+      "source": "(princ \"Hello World\") \r\n;;;\r\n;;;",
+      "language": "autolisp"
+    }
+  ]
+  ```
+
 
 ### 의도 → 스킬 매핑 (Intent → Skill Mapping)
 
