@@ -53,7 +53,7 @@ AutoLISP 코드를 단 한 줄이라도 치기 전에 반드시 구조화된 스
 4. **Code Style & Safety (코드 안전 규칙)** — 변수 로컬화 범위, Undo 그룹화 범위, 드로잉 동작 도중의 OSNAP 제어 방식을 못박아둡니다.
 5. **Testing Strategy (테스트 및 검증 전략)** — 작성된 도면 데이터베이스 상태가 온전한지 테스트할 AutoLISP 질의 방식(예: `tblsearch`를 통한 레이어 확인, `ssget`을 통한 그린 개체 체크)을 규정합니다.
 6. **Boundaries (설계 경계선)**:
-   - **Always do (반드시 지킬 조항):** 실패/중도 취소 시 무조건 `OSMODE` 및 `*error*`를 복원할 것, 모든 코드 셀은 `progn`으로 감쌀 것.
+   - **Always do (반드시 지킬 조항):** 실패/중도 취소 시 무조건 `OSMODE` 및 `*error*`를 복원할 것, 코드 셀은 `progn`으로 감싸지 않고 직접 작성할 것, 설명 마크다운과 코드 셀을 함수/단계별로 꼼꼼히 세분화할 것, 마크다운 3 depth 구조를 철저히 지킬 것.
    - **Ask first (선제 조율 조항):** 요구 범위 밖의 사용자 정의 시스템 변수를 임의로 조정할 때, 도면에 이미 그려진 외부 엔티티를 삭제할 때.
    - **Never do (절대 금지 조항):** 셀 구동 후 임시 해제한 OSNAP을 원래대로 돌려놓지 않고 끝내기, 개체 선택 리턴 값에 대해 `nil` 방어 없이 바로 데이터 추출하기.
 
@@ -76,15 +76,20 @@ AutoLISP 코드를 단 한 줄이라도 치기 전에 반드시 구조화된 스
 - ActiveX 인터페이스: [예: vla-AddLine, vla-Offset]
 
 ## Notebook Cell Structure (노트북 셀 시나리오 기획)
-- Cell 1 (Markdown): [1단계 작업 안내 설명 작성]
-- Cell 2 (AutoLISP): [1단계 동작을 수행할 progn 랩핑 코드, undo group 범위 내포]
-- Cell 3 (Markdown): [2단계 작업 안내 설명 작성]
-- Cell 4 (AutoLISP): [2단계 동작을 수행할 progn 랩핑 코드]
+- Cell 1 (Markdown): [### 1단계: 비상 탈출용 에러 핸들러 정의 (3 depth)]
+- Cell 2 (AutoLISP): [*error* 함수 선언부 코드 (progn 미사용)]
+- Cell 3 (Markdown): [### 2단계: 시스템 변수 백업 및 Undo 시작]
+- Cell 4 (AutoLISP): [구조 변수 백업 및 undo _group 개시 코드]
+- Cell 5 (Markdown): [### 3단계: 도면 작도 실행]
+- Cell 6 (AutoLISP): [실제 작도 실행 코드]
+- Cell 7 (Markdown): [### 4단계: 시스템 변수 복구 및 Undo 완료]
+- Cell 8 (AutoLISP): [복구 및 undo _end 실행 코드]
 
 ## Code Style & Safety Guidelines (안정성 확보 규범)
 - 변수 로컬화: `(defun ... ( / var1 var2 ))` 형식의 함수 내부 로컬 처리 보장
-- Undo 관리: 각 실행 코드 셀 단위의 완전한 Undo 묶음 적용
+- Undo 관리: 세분화된 셀 흐름 전체를 아우르는 연계 Undo 묶음 적용
 - OSNAP 통제: 점 지정/입력 시에는 켜두고, 내부 계산 좌표로 그릴 때는 임시 비활성화 처리
+
 
 ## Testing & Verification Strategy (동작 검증 방안)
 - [작성 완료 후 레이어 구성 및 엔티티 생성 정합성을 체크할 검증 쿼리 구문 정의]

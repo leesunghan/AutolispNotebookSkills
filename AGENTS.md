@@ -14,7 +14,7 @@ Claude.ai, Claude Code 및 에이전트 워크플로우가 AutoLISP Notebook(`.l
 
 1. **스킬 기반 실행**: 작업에 매핑되는 스킬(`skills/<스킬명>/SKILL.md`)을 먼저 열어 가이드를 엄격히 준수하십시오. 스킬을 거치지 않고 노트북 파일(`.lspnb`)을 직접 구현해서는 안 됩니다.
 2. **프로젝트 격리**: 모든 신규 산출물(`SPEC.md`, `plan.md`, `todo.md`, `.lspnb` 등)은 반드시 `projects/<프로젝트명>/` 하위에 생성하고 격리 보존해야 합니다.
-3. **노트북 셀 패턴**: 마크다운 셀(설명)과 AutoLISP 코드 셀(`(progn ...)` 래핑)이 반드시 교대로 배치되어야 합니다.
+3. **노트북 셀 패턴 및 세분화**: 마크다운 설명 셀과 AutoLISP 코드 셀이 반드시 교대로 배치되어야 합니다. AutoLISP 노트북의 주목적은 목적 기능의 리습코드를 생성하고 코드를 학습하는 데 있으므로, 사용한 LISP 함수 및 로직을 설명하는 마크다운과 코드 셀을 더 미세하게 세분화합니다(예: 오류 처리 함수 `*error*` 선언부, 시스템 변수 백업부 등을 각각 개별 설명 셀과 코드 셀로 분리). 이때 코드 셀의 LISP 코드는 `(progn ...)`으로 묶지 않고 일반 LISP 코드 형태(예: `(setq a 1) (setq b 2)`)로 직접 작성합니다.
 4. **노트북 포맷 및 이중 이스케이프**: `.lspnb` 파일은 루트 레벨 JSON 배열(`[...]`) 형식이며, `"source"` 필드는 단일 문자열이어야 합니다. 도구(API)를 통해 편집할 때 최종 JSON에 오류가 없도록 아래 문자 매핑 규칙을 철저히 준수하십시오.
 
    | 원래 소스 내용 (LISP/Markdown) | 최종 JSON 파일에 쓰여야 할 텍스트 | 도구 호출 인자(API Parameter)에 작성할 이중 이스케이프 |
@@ -28,6 +28,10 @@ Claude.ai, Claude Code 및 에이전트 워크플로우가 AutoLISP Notebook(`.l
    > **절대적 금지 사항 (CRITICAL PROHIBITION)**: 도구 호출 인자 내부의 `"source"` 필드 값 안에 **실제 줄바꿈(Enter 입력으로 인한 physical newline)**을 절대 넣지 마십시오. 모든 개행은 문자열 내에서 반드시 `\\r\\n` 또는 `\\n` 문자 기호로만 표현되어 한 줄(Single Line)로 입력되어야 합니다. 실제 줄바꿈이 포함되면 파일에 제어 문자가 그대로 들어가 JSON 포맷 파싱 오류를 유발합니다.
 
 5. **문서 한글화 표준**: 새로운 프로젝트나 세션을 시작할 때 생성되는 모든 사양서(`SPEC.md`), 계획서(`plan.md`/`implementation_plan.md`), 태스크 목록(`todo.md`/`task.md`)은 기본 템플릿의 형식을 따르되, 본문 내용은 반드시 한국어(Korean)로만 작성 및 유지되어야 합니다.
+6. **마크다운 depth 구조화 표준**: 노트북 내의 마크다운 헤더는 구조적 가독성을 확보하기 위해 다음 3단계 depth 구분을 철저히 준수합니다.
+   - `# 타이틀` (노트북 대제목)
+   - `## [대분류]` 또는 `## [대분류] 소단계:` (예: `## [환경설정]`, `## [중심선 그리기] 1단계:`)
+   - `### 소단계` (예: `### 1단계: 비상 ...`, `### 2단계: Undo ...` 등)
 
 ### 의도 → 스킬 매핑 (Intent → Skill Mapping)
 
@@ -46,7 +50,7 @@ Claude.ai, Claude Code 및 에이전트 워크플로우가 AutoLISP Notebook(`.l
 
 - **DEFINE (정의)** → `spec-driven-development` (노트북 구조, 대상 CAD 플랫폼, 레이어, OSNAP 규칙 및 Undo 바운더리를 명시합니다).
 - **PLAN (계획)** → `planning-and-task-breakdown` (셀 단위의 세로 슬라이스로 작업을 분할합니다).
-- **BUILD (구현)** → `incremental-implementation` + `test-driven-development` (교차 셀을 작성하고, `progn` 래핑, 변수 로컬화, OSNAP 제어가 포함되었는지 확인합니다).
+- **BUILD (구현)** → `incremental-implementation` + `test-driven-development` (교차 셀을 세분화하여 작성하고, 개별 코드 셀의 `progn` 래핑을 배제한 채 변수 로컬화 및 OSNAP 제어가 포함되었는지 확인합니다).
 - **VERIFY (검증)** → `debugging-and-error-recovery` (AutoLISP 실행 실패, 괄호 불일치, CAD 시스템 변수 상태 버그 등을 찾아내고 조치합니다).
 - **REVIEW (검토)** → `code-review-and-quality` (변수 로컬화, ActiveX 객체 정리, CAD 환경 복원 상태를 점검합니다).
 - **SHIP (배포)** → `shipping-and-launch` (JSON 구조를 검증하고, VS Code Notebook 확장 도구에서 오류 없이 로드되는지 확인한 뒤 테스트 실행을 마칩니다).
